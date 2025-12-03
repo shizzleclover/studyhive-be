@@ -1,0 +1,3 @@
+npm i -D nodemon eslint prettier
+npm i @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
+npm i express mongoose dotenv cors helmet morgan jsonwebtoken bcryptjs joi express-rate-limit

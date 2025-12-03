@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyHive API Test Console</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <h1>🎓 StudyHive API Test Console</h1>
+            </div>
+            <div class="auth-status">
+                <span id="userStatus">Not Logged In</span>
+                <button id="logoutBtn" style="display: none;">Logout</button>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <button type="button" class="tab-btn active" data-tab="auth">🔐 Auth</button>
+            <button type="button" class="tab-btn" data-tab="profile">👤 Profile</button>
+            <button type="button" class="tab-btn" data-tab="courses">📚 Courses</button>
+            <button type="button" class="tab-btn" data-tab="resources">📄 Resources</button>
+            <button type="button" class="tab-btn" data-tab="notes">📝 Notes</button>
+            <button type="button" class="tab-btn" data-tab="quizzes">🎯 Quizzes</button>
+            <button type="button" class="tab-btn" data-tab="requests">📮 Requests</button>
+            <button type="button" class="tab-btn" data-tab="leaderboard">🏆 Leaderboard</button>
+            <button type="button" class="tab-btn" data-tab="search">🔍 Search</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Auth Tab -->
+            <div id="auth" class="tab-content active">
+                <div class="grid">
+                    <!-- Signup -->
+                    <div class="card">
+                        <h3>📝 Sign Up</h3>
+                        <input type="text" id="signupName" placeholder="Full Name">
+                        <input type="email" id="signupEmail" placeholder="Email">
+                        <input type="password" id="signupPassword" placeholder="Password">
+                        <button onclick="signup()">Sign Up</button>
+                    </div>
+
+                    <!-- Login -->
+                    <div class="card">
+                        <h3>🔑 Login</h3>
+                        <input type="email" id="loginEmail" placeholder="Email">
+                        <input type="password" id="loginPassword" placeholder="Password">
+                        <button onclick="login()">Login</button>
+                    </div>
+
+                    <!-- Verify Email -->
+                    <div class="card">
+                        <h3>✉️ Verify Email</h3>
+                        <input type="text" id="verifyOTP" placeholder="Enter 6-digit OTP" maxlength="6" pattern="[0-9]{6}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        <p style="color: #666; font-size: 12px; margin: 5px 0;">Check your email for the 6-digit code (expires in 10 minutes)</p>
+                        <button onclick="verifyEmail()">Verify Email</button>
+                        <button onclick="resendOTP()" style="background: #6366f1; margin-top: 5px;">Resend OTP</button>
+                    </div>
+
+                    <!-- Forgot Password -->
+                    <div class="card">
+                        <h3>🔒 Forgot Password</h3>
+                        <input type="email" id="forgotEmail" placeholder="Email">
+                        <button onclick="forgotPassword()">Send Reset Link</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Tab -->
+            <div id="profile" class="tab-content">
+                <div class="grid">
+                    <div class="card">
+                        <h3>👤 My Profile</h3>
+                        <button onclick="getMyProfile()">Load Profile</button>
+                        <div id="profileData"></div>
+                    </div>
+
+                    <div class="card">
+                        <h3>✏️ Update Profile</h3>
+                        <input type="text" id="updateName" placeholder="Name">
+                        <textarea id="updateBio" placeholder="Bio"></textarea>
+                        <button onclick="updateProfile()">Update</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Courses Tab -->
+            <div id="courses" class="tab-content">
+                <div class="card">
+                    <h3>📚 Courses</h3>
+                    <div class="actions">
+                        <button onclick="getLevels()">Load Levels</button>
+                        <button onclick="getCourses()">Load Courses</button>
+                    </div>
+                    <div id="coursesData" class="data-list"></div>
+                </div>
+            </div>
+
+            <!-- Resources Tab -->
+            <div id="resources" class="tab-content">
+                <div class="grid">
+                    <!-- Upload -->
+                    <div class="card">
+                        <h3>📤 Upload Resource</h3>
+                        <select id="resourceType" onchange="togglePastQuestionFields()">
+                            <option value="past-question">Past Question</option>
+                            <option value="official-note">Official Note</option>
+                        </select>
+                        <input type="file" id="fileInput">
+                        <input type="text" id="resourceTitle" placeholder="Title">
+                        <input type="text" id="resourceCourseId" placeholder="Course ID">
+                        <!-- Past Question Specific Fields -->
+                        <div id="pastQuestionFields" style="display: block;">
+                            <select id="pastQuestionType" required>
+                                <option value="">Select Type</option>
+                                <option value="past-exam">Past Exam</option>
+                                <option value="past-mid-semester">Past Mid Semester</option>
+                                <option value="past-quiz">Past Quiz</option>
+                                <option value="past-assignment">Past Assignment</option>
+                                <option value="past-class-work">Past Class Work</option>
+                                <option value="past-group-project">Past Group Project</option>
+                                <option value="past-project">Past Project</option>
+                            </select>
+                            <input type="number" id="pastQuestionYear" placeholder="Year (e.g., 2024)" min="2000" max="2099" value="2024">
+                            <select id="pastQuestionSemester">
+                                <option value="First">First Semester</option>
+                                <option value="Second">Second Semester</option>
+                            </select>
+                        </div>
+                        <button onclick="uploadResource()">Upload</button>
+                    </div>
+
+                    <!-- List Resources -->
+                    <div class="card">
+                        <h3>📋 Resources</h3>
+                        <button onclick="getPastQuestions()">Past Questions</button>
+                        <button onclick="getOfficialNotes()">Official Notes</button>
+                        <div id="resourcesData" class="data-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes Tab -->
+            <div id="notes" class="tab-content">
+                <div class="grid">
+                    <!-- Create Note -->
+                    <div class="card">
+                        <h3>✍️ Create Community Note</h3>
+                        <input type="text" id="noteTitle" placeholder="Title">
+                        <input type="text" id="noteCourseId" placeholder="Course ID">
+                        <textarea id="noteContent" placeholder="Content (supports markdown)"></textarea>
+                        <button onclick="createNote()">Create Note</button>
+                    </div>
+
+                    <!-- My Notes -->
+                    <div class="card">
+                        <h3>📚 My Notes</h3>
+                        <button onclick="getMyNotes()">Load My Notes</button>
+                        <div id="myNotesData" class="data-list"></div>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <!-- All Community Notes -->
+                    <div class="card">
+                        <h3>📝 All Community Notes</h3>
+                        <div class="actions">
+                            <button onclick="getNotes()">Load All Notes</button>
+                            <select id="notesSortBy" style="width: auto; margin: 0;">
+                                <option value="recent">Recent</option>
+                                <option value="popular">Popular</option>
+                            </select>
+                        </div>
+                        <div id="notesData" class="data-list"></div>
+                    </div>
+
+                    <!-- Note Details & Actions -->
+                    <div class="card">
+                        <h3>🔍 View Note Details</h3>
+                        <input type="text" id="viewNoteId" placeholder="Note ID">
+                        <button onclick="viewNoteDetails()">View Note</button>
+                        <div id="noteDetails"></div>
+                    </div>
+                </div>
+
+                <!-- Voting Section -->
+                <div class="card">
+                    <h3>👍👎 Vote on Notes</h3>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 10px;">
+                        Enter a Note ID below to upvote or downvote it. Votes help determine note popularity!
+                    </p>
+                    <input type="text" id="voteNoteId" placeholder="Note ID">
+                    <div class="actions">
+                        <button onclick="upvoteNote()" style="background: #10b981;">👍 Upvote</button>
+                        <button onclick="downvoteNote()" style="background: #ef4444;">👎 Downvote</button>
+                        <button onclick="getVoteCounts()" style="background: #6366f1;">📊 Get Vote Counts</button>
+                    </div>
+                    <div id="voteInfo"></div>
+                </div>
+
+                <!-- Comments Section -->
+                <div class="card">
+                    <h3>💬 Comments</h3>
+                    <input type="text" id="commentNoteId" placeholder="Note ID">
+                    <input type="text" id="commentContent" placeholder="Your comment">
+                    <button onclick="addComment()">Add Comment</button>
+                    <button onclick="getComments()">Load Comments</button>
+                    <div id="commentsData" class="data-list"></div>
+                </div>
+            </div>
+
+            <!-- Quizzes Tab -->
+            <div id="quizzes" class="tab-content">
+                <div class="grid">
+                    <!-- Create Quiz -->
+                    <div class="card">
+                        <h3>🎯 Create Quiz (Rep/Admin)</h3>
+                        <input type="text" id="quizTitle" placeholder="Title">
+                        <input type="text" id="quizCourseId" placeholder="Course ID">
+                        <textarea id="quizDescription" placeholder="Description"></textarea>
+                        <button onclick="createQuiz()">Create Quiz</button>
+                    </div>
+
+                    <!-- List Quizzes -->
+                    <div class="card">
+                        <h3>📋 Available Quizzes</h3>
+                        <button onclick="getQuizzes()">Load Quizzes</button>
+                        <div id="quizzesData" class="data-list"></div>
+                    </div>
+                </div>
+
+                <!-- Take Quiz -->
+                <div class="card">
+                    <h3>📝 Take Quiz</h3>
+                    <input type="text" id="takeQuizId" placeholder="Quiz ID">
+                    <button onclick="loadQuiz()">Load Quiz</button>
+                    <div id="quizContent"></div>
+                    <button id="submitQuizBtn" style="display:none;" onclick="submitQuiz()">Submit Quiz</button>
+                </div>
+            </div>
+
+            <!-- Requests Tab -->
+            <div id="requests" class="tab-content">
+                <div class="grid">
+                    <!-- Create Request -->
+                    <div class="card">
+                        <h3>📮 Create Request</h3>
+                        <input type="text" id="requestTitle" placeholder="Title">
+                        <input type="text" id="requestCourseId" placeholder="Course ID">
+                        <select id="requestType">
+                            <option value="past-question">Past Question</option>
+                            <option value="official-note">Official Note</option>
+                            <option value="quiz">Quiz</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <textarea id="requestDescription" placeholder="Description"></textarea>
+                        <button onclick="createRequest()">Create Request</button>
+                    </div>
+
+                    <!-- List Requests -->
+                    <div class="card">
+                        <h3>📋 All Requests</h3>
+                        <button onclick="getRequests()">Load Requests</button>
+                        <div id="requestsData" class="data-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaderboard Tab -->
+            <div id="leaderboard" class="tab-content">
+                <div class="grid">
+                    <div class="card">
+                        <h3>🏆 Global Leaderboard</h3>
+                        <button onclick="getLeaderboard()">Load Leaderboard</button>
+                        <div id="leaderboardData" class="data-list"></div>
+                    </div>
+
+                    <div class="card">
+                        <h3>⭐ My Position</h3>
+                        <button onclick="getMyPosition()">Get My Rank</button>
+                        <div id="positionData"></div>
+                    </div>
+
+                    <div class="card">
+                        <h3>🌟 Top Contributors</h3>
+                        <button onclick="getTopContributors()">Load</button>
+                        <div id="contributorsData" class="data-list"></div>
+                    </div>
+
+                    <div class="card">
+                        <h3>🎓 Quiz Champions</h3>
+                        <button onclick="getQuizChampions()">Load</button>
+                        <div id="championsData" class="data-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Tab -->
+            <div id="search" class="tab-content">
+                <div class="card">
+                    <h3>🔍 Search</h3>
+                    <div class="search-bar">
+                        <input type="text" id="searchQuery" placeholder="Search anything...">
+                        <select id="searchType">
+                            <option value="global">Global</option>
+                            <option value="courses">Courses</option>
+                            <option value="notes">Community Notes</option>
+                            <option value="past-questions">Past Questions</option>
+                            <option value="users">Users</option>
+                        </select>
+                        <button onclick="search()">Search</button>
+                    </div>
+                    <div id="searchResults" class="data-list"></div>
+                </div>
+
+                <div class="card">
+                    <h3>💡 Search Suggestions</h3>
+                    <input type="text" id="suggestQuery" placeholder="Type to get suggestions...">
+                    <button onclick="getSuggestions()">Get Suggestions</button>
+                    <div id="suggestionsData"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Response Panel -->
+        <div class="response-panel">
+            <div class="panel-header">
+                <h3>📊 Response</h3>
+                <button onclick="clearResponse()">Clear</button>
+            </div>
+            <pre id="response"></pre>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
