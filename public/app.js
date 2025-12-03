@@ -1,8 +1,19 @@
 // Configuration
 const API_BASE = 'http://localhost:5000/api';
-let accessToken = localStorage.getItem('accessToken');
-let refreshToken = localStorage.getItem('refreshToken');
-let currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+
+// Safely read and parse stored user/auth from localStorage
+function safeParseJSON(value, fallback = null) {
+    if (!value || value === 'undefined' || value === 'null') return fallback;
+    try {
+        return JSON.parse(value);
+    } catch {
+        return fallback;
+    }
+}
+
+let accessToken = localStorage.getItem('accessToken') || null;
+let refreshToken = localStorage.getItem('refreshToken') || null;
+let currentUser = safeParseJSON(localStorage.getItem('user'), null);
 let currentQuizData = null;
 let quizAnswers = [];
 
@@ -259,9 +270,10 @@ document.getElementById('logoutBtn').onclick = async function() {
 // ==================== PROFILE ====================
 
 async function getMyProfile() {
-    const data = await apiCall('/users/me');
-    if (data.data) {
-        const profile = data.data;
+    // Use auth/me endpoint which returns { data: { user } }
+    const data = await apiCall('/auth/me');
+    if (data.data && data.data.user) {
+        const profile = data.data.user;
         document.getElementById('profileData').innerHTML = `
             <div class="data-item">
                 <h4>${profile.name}</h4>
@@ -284,7 +296,8 @@ async function updateProfile() {
     if (name) updateData.name = name;
     if (bio) updateData.bio = bio;
 
-    await apiCall('/users/me', {
+    // Use auth/me equivalent for profile update (user-owned fields)
+    await apiCall('/users/profile', {
         method: 'PUT',
         body: JSON.stringify(updateData),
     });
