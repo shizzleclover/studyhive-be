@@ -70,9 +70,13 @@ const forgotPasswordValidator = {
 
 const resetPasswordValidator = {
   body: Joi.object({
-    token: Joi.string().required().messages({
-      'any.required': 'Reset token is required',
-    }),
+    otp: Joi.string()
+      .pattern(/^\d{6}$/)
+      .required()
+      .messages({
+        'string.pattern.base': 'OTP must be exactly 6 digits',
+        'any.required': 'OTP is required',
+      }),
     newPassword: Joi.string().min(6).required().messages({
       'string.min': 'New password must be at least 6 characters',
       'any.required': 'New password is required',

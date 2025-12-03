@@ -230,31 +230,49 @@ const sendVerificationEmail = async (email, otp, userName) => {
 };
 
 /**
- * Send password reset email
+ * Send password reset email with 6-digit OTP
  * @param {string} email - User email
- * @param {string} resetToken - Password reset token
+ * @param {string} otp - 6-digit OTP
  * @param {string} userName - User name
  */
-const sendPasswordResetEmail = async (email, resetToken, userName) => {
-  const resetUrl = `${config.frontendUrl}/reset-password?token=${resetToken}`;
-  
+const sendPasswordResetEmail = async (email, otp, userName) => {
   const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2>Password Reset Request 🔐</h2>
-      <p>Hi ${userName},</p>
-      <p>We received a request to reset your StudyHive password.</p>
-      <p>Click the button below to reset your password:</p>
-      <a href="${resetUrl}" 
-         style="display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 6px; margin: 16px 0;">
-        Reset Password
-      </a>
-      <p>Or copy and paste this link into your browser:</p>
-      <p style="color: #6B7280; word-break: break-all;">${resetUrl}</p>
-      <p style="color: #6B7280; font-size: 14px;">This link will expire in 1 hour.</p>
-      <hr style="margin: 24px 0; border: none; border-top: 1px solid #E5E7EB;">
-      <p style="color: #9CA3AF; font-size: 12px;">
-        If you didn't request a password reset, please ignore this email or contact support if you have concerns.
-      </p>
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+        <h1 style="color: white; margin: 0;">🔐 StudyHive</h1>
+      </div>
+      <div style="background: #ffffff; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e5e7eb;">
+        <h2 style="color: #111827; margin-top: 0;">Password Reset Request</h2>
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+          Hi ${userName},
+        </p>
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+          We received a request to reset your StudyHive password. Use the OTP below to complete your password reset.
+        </p>
+        
+        <div style="background: #f9fafb; border: 2px dashed #f97316; border-radius: 8px; padding: 20px; margin: 30px 0; text-align: center;">
+          <p style="color: #6b7280; font-size: 14px; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px;">Your Reset Code</p>
+          <div style="font-size: 36px; font-weight: bold; color: #ea580c; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+            ${otp}
+          </div>
+        </div>
+        
+        <p style="color: #6b7280; font-size: 14px; margin: 20px 0;">
+          Enter this 6-digit code on the password reset page to set a new password. This code will expire in <strong>1 hour</strong>.
+        </p>
+        
+        <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; margin: 20px 0; border-radius: 4px;">
+          <p style="color: #92400e; font-size: 13px; margin: 0;">
+            <strong>⚠️ Security Tip:</strong> If you did not request this, you can safely ignore this email. Your password will not be changed.
+          </p>
+        </div>
+        
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
+        
+        <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+          This email was sent by StudyHive because someone requested a password reset for your account.
+        </p>
+      </div>
     </div>
   `;
 
@@ -265,16 +283,18 @@ const sendPasswordResetEmail = async (email, resetToken, userName) => {
     
     We received a request to reset your StudyHive password.
     
-    Reset your password by clicking this link: ${resetUrl}
+    Your password reset code is: ${otp}
     
-    This link will expire in 1 hour.
+    Enter this 6-digit code on the password reset page to set a new password.
     
-    If you didn't request a password reset, please ignore this email.
+    This code will expire in 1 hour.
+    
+    If you didn't request a password reset, you can safely ignore this email.
   `;
 
   await sendEmail({
     to: email,
-    subject: 'Reset your StudyHive password',
+    subject: 'Reset your StudyHive password - Your OTP',
     html,
     text,
   });

@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const ApiError = require('../utils/ApiError');
 const { HTTP_STATUS } = require('../utils/constants');
 const asyncHandler = require('../utils/asyncHandler');
+const config = require('../../config/env');
 
 /**
  * Verify JWT token and attach user to request
@@ -20,8 +21,8 @@ const authenticate = asyncHandler(async (req, res, next) => {
   const token = authHeader.split(' ')[1];
 
   try {
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Verify token using centralized config
+    const decoded = jwt.verify(token, config.jwt.secret);
     
     // Attach user info to request
     req.user = {
@@ -54,7 +55,7 @@ const optionalAuth = asyncHandler(async (req, res, next) => {
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, config.jwt.secret);
     req.user = {
       id: decoded.id,
       email: decoded.email,

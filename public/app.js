@@ -121,6 +121,17 @@ async function apiCall(endpoint, options = {}, retry = true) {
         showResponse(data);
 
         if (!response.ok) {
+            // If still unauthorized here, ensure we clear any stale auth state
+            if (!options.skipAuth && response.status === 401) {
+                accessToken = null;
+                refreshToken = null;
+                currentUser = null;
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                localStorage.removeItem('user');
+                updateAuthStatus();
+            }
+
             throw new Error(data.message || 'Request failed');
         }
 
@@ -370,13 +381,16 @@ async function uploadResource() {
         return;
     }
 
-    // Step 1: Get presigned URL
-    const urlData = await apiCall('/upload/presigned-url', {
+    // Step 1: Get signed URL (backend expects folder to distinguish storage)
+    const folder = type === 'past-question' ? 'past-questions' : 'official-notes';
+
+    const urlData = await apiCall('/upload/signed-url', {
         method: 'POST',
         body: JSON.stringify({
             fileName: file.name,
             fileType: file.type,
             fileSize: file.size,
+            folder,
         }),
     });
 

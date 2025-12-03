@@ -260,55 +260,63 @@ const resendVerificationEmail = async (email) => {
 };
 
 /**
- * Request password reset
+ * Request password reset with 6-digit OTP
  */
 const forgotPassword = async (email) => {
   const user = await User.findOne({ email });
 
   if (!user) {
     // Don't reveal if user exists
-    return { message: 'If email exists, reset link will be sent' };
+    return { message: 'If email exists, reset OTP will be sent' };
   }
 
-  // Generate reset token
-  const resetToken = generateToken();
-  const hashedToken = hashToken(resetToken);
+  // Generate reset OTP
+  const otp = generateOTP();
+  const hashedOTP = hashOTP(otp);
 
-  user.resetPasswordToken = hashedToken;
+  user.resetPasswordToken = hashedOTP;
   user.resetPasswordExpiry = Date.now() + 60 * 60 * 1000; // 1 hour
   await user.save();
 
-  // Send password reset email
+  // Send password reset email with OTP
   try {
-    await emailService.sendPasswordResetEmail(email, resetToken, user.name);
-    console.log(`✅ Password reset email sent to ${email}`);
+    await emailService.sendPasswordResetEmail(email, otp, user.name);
+    console.log(`✅ Password reset OTP email sent to ${email}`);
   } catch (error) {
     console.error('❌ Failed to send password reset email:', error.message);
-    console.log(`📝 Reset token for ${email}: ${resetToken}`);
+    console.log(`📝 Reset OTP for ${email}: ${otp}`);
     throw new ApiError(
       HTTP_STATUS.INTERNAL_SERVER_ERROR,
       'Failed to send reset email'
     );
   }
 
-  return { message: 'If email exists, reset link will be sent' };
+  return { message: 'If email exists, reset OTP will be sent' };
 };
 
 /**
- * Reset password with token
+ * Reset password with 6-digit OTP
  */
-const resetPassword = async (token, newPassword) => {
-  const hashedToken = hashToken(token);
+const resetPassword = async (otp, newPassword) => {
+  // Validate OTP format (6 digits)
+  if (!/^\d{6}$/.test(otp)) {
+    throw new ApiError(
+      HTTP_STATUS.BAD_REQUEST,
+      'Invalid OTP format. OTP must be 6 digits.'
+    );
+  }
+
+  const hashedOTP = hashOTP(otp);
 
   const user = await User.findOne({
-    resetPasswordToken: hashedToken,
+    resetPasswordToken: hashedOTP,
     resetPasswordExpiry: { $gt: Date.now() },
   }).select('+resetPasswordToken +resetPasswordExpiry');
 
   if (!user) {
     throw new ApiError(
       HTTP_STATUS.BAD_REQUEST,
-      'Invalid or expired reset token'
+      'Invalid or expired reset OTP'
     );
   }
 

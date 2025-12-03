@@ -19,7 +19,12 @@ const signup = asyncHandler(async (req, res) => {
     'Account created successfully. Please check your email for the 6-digit OTP to verify your account.'
   );
 
-  res.status(response.statusCode).json(response);
+  // Also expose tokens at top-level for external frontends expecting flat shape
+  res.status(response.statusCode).json({
+    ...response,
+    accessToken: data.accessToken,
+    refreshToken: data.refreshToken,
+  });
 });
 
 /**
@@ -38,7 +43,12 @@ const login = asyncHandler(async (req, res) => {
     'Logged in successfully'
   );
 
-  res.status(response.statusCode).json(response);
+  // Also expose tokens at top-level for external frontends expecting flat shape
+  res.status(response.statusCode).json({
+    ...response,
+    accessToken: data.accessToken,
+    refreshToken: data.refreshToken,
+  });
 });
 
 /**
@@ -57,7 +67,11 @@ const refreshToken = asyncHandler(async (req, res) => {
     'Token refreshed successfully'
   );
 
-  res.status(response.statusCode).json(response);
+  // Also expose new accessToken at top-level
+  res.status(response.statusCode).json({
+    ...response,
+    accessToken: data.accessToken,
+  });
 });
 
 /**
@@ -117,7 +131,7 @@ const resendVerification = asyncHandler(async (req, res) => {
 
 /**
  * @route   POST /api/auth/forgot-password
- * @desc    Request password reset
+ * @desc    Request password reset (sends 6-digit OTP)
  * @access  Public
  */
 const forgotPassword = asyncHandler(async (req, res) => {
@@ -128,7 +142,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   const response = new ApiResponse(
     HTTP_STATUS.OK,
     data,
-    'If email exists, reset link will be sent'
+    'If email exists, reset OTP will be sent'
   );
 
   res.status(response.statusCode).json(response);
@@ -136,13 +150,13 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
 /**
  * @route   POST /api/auth/reset-password
- * @desc    Reset password with token
+ * @desc    Reset password with 6-digit OTP
  * @access  Public
  */
 const resetPassword = asyncHandler(async (req, res) => {
-  const { token, newPassword } = req.body;
+  const { otp, newPassword } = req.body;
 
-  const data = await authService.resetPassword(token, newPassword);
+  const data = await authService.resetPassword(otp, newPassword);
 
   const response = new ApiResponse(
     HTTP_STATUS.OK,

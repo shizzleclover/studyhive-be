@@ -258,7 +258,8 @@ router.post(
  * @swagger
  * /api/auth/forgot-password:
  *   post:
- *     summary: Request password reset
+ *     summary: Request password reset (send 6-digit OTP)
+ *     description: Sends a 6-digit OTP to the user's email if the account exists. The OTP is valid for 1 hour.
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -272,9 +273,10 @@ router.post(
  *               email:
  *                 type: string
  *                 format: email
+ *                 example: 'user@example.com'
  *     responses:
  *       200:
- *         description: Reset link sent if email exists
+ *         description: Reset OTP sent if email exists
  */
 router.post(
   '/forgot-password',
@@ -286,7 +288,8 @@ router.post(
  * @swagger
  * /api/auth/reset-password:
  *   post:
- *     summary: Reset password with token
+ *     summary: Reset password with 6-digit OTP
+ *     description: Resets the user's password using a valid 6-digit OTP received via email.
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -295,11 +298,14 @@ router.post(
  *           schema:
  *             type: object
  *             required:
- *               - token
+ *               - otp
  *               - newPassword
  *             properties:
- *               token:
+ *               otp:
  *                 type: string
+ *                 pattern: '^[0-9]{6}$'
+ *                 example: '123456'
+ *                 description: 6-digit OTP sent to the user's email
  *               newPassword:
  *                 type: string
  *                 minLength: 6
